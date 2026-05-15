@@ -3,3 +3,7 @@ data/
 __pycache__/
 *.pyc
 .env
+model/voting_model.pkl
+model/rf_model.pkl
+model/xgb_model.pkl
+model/lr_model.pkl
