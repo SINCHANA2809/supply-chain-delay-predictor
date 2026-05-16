@@ -8,3 +8,6 @@ model/rf_model.pkl
 model/xgb_model.pkl
 model/lr_model.pkl
 .env
+mlflow.db
+mlflow-artifacts/
+mlruns/
