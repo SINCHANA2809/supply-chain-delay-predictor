@@ -1,3 +1,4 @@
+from fastapi.responses import FileResponse
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -131,15 +132,7 @@ Be concise and practical."""
                     f"Continue current handling procedures.")
 @app.get("/")
 def home():
-    return {
-        "message": "Supply Chain Delay Predictor API",
-        "version": "1.0.0",
-        "endpoints": {
-            "predict": "/predict",
-            "health": "/health",
-            "docs": "/docs"
-        }
-    }
+    return FileResponse('index.html')
 
 @app.get("/health")
 def health():
