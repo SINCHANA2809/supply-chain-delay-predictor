@@ -1,0 +1,23 @@
+artifact_path: file:E:/supply-chain-project/mlruns/1/models/m-caef935cbf5d4171a4a9d3834585063a/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.14.0
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.12.0
+model_id: m-caef935cbf5d4171a4a9d3834585063a
+model_size_bytes: 772
+model_uuid: m-caef935cbf5d4171a4a9d3834585063a
+prompts: null
+run_id: 06bf2fea7c3d42f1a59965e3c0929422
+utc_time_created: '2026-05-15 18:30:53.410562'
