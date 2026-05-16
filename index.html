@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Delay Predictor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        input, select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #3b82f6;
+        }
+        select option { background: #1e293b; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .result { display: none; }
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .status-badge {
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 20px;
+        }
+        .delayed {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+        .ontime {
+            background: #14532d;
+            color: #86efac;
+        }
+        .confidence {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        .confidence span {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .explanation-box {
+            background: #0f172a;
+            border-left: 3px solid #3b82f6;
+            border-radius: 4px;
+            padding: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            display: none;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .stat-card {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚚 Supply Chain Delay Predictor</h1>
+            <p>ML-powered shipment delay prediction with AI explanations</p>
+        </div>
+
+        <div class="card">
+            <h2>Shipment Details</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Warehouse Block</label>
+                    <select id="warehouse_block">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="F" selected>F</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mode of Shipment</label>
+                    <select id="mode_of_shipment">
+                        <option value="Ship" selected>Ship</option>
+                        <option value="Flight">Flight</option>
+                        <option value="Road">Road</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Customer Care Calls (1-7)</label>
+                    <input type="number" id="customer_care_calls" value="6" min="1" max="7">
+                </div>
+                <div class="form-group">
+                    <label>Customer Rating (1-5)</label>
+                    <input type="number" id="customer_rating" value="2" min="1" max="5">
+                </div>
+                <div class="form-group">
+                    <label>Cost of Product (₹)</label>
+                    <input type="number" id="cost_of_product" value="250">
+                </div>
+                <div class="form-group">
+                    <label>Prior Purchases</label>
+                    <input type="number" id="prior_purchases" value="3">
+                </div>
+                <div class="form-group">
+                    <label>Product Importance</label>
+                    <select id="product_importance">
+                        <option value="Low" selected>Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="gender">
+                        <option value="M" selected>M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Discount Offered (%)</label>
+                    <input type="number" id="discount_offered" value="5" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Weight (gms)</label>
+                    <input type="number" id="weight_in_gms" value="4500">
+                </div>
+            </div>
+            <button class="btn" onclick="predict()">🔍 Predict Delay</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing shipment...</p>
+        </div>
+
+        <div class="card result" id="result">
+            <h2>Prediction Result</h2>
+            <div class="result-header">
+                <span class="status-badge" id="status-badge"></span>
+                <div class="confidence">
+                    Confidence: <span id="confidence-val"></span>%
+                </div>
+            </div>
+            <div class="explanation-box" id="explanation"></div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-prediction"></div>
+                    <div class="stat-label">Prediction</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-confidence"></div>
+                    <div class="stat-label">Confidence</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">GBM</div>
+                    <div class="stat-label">Model Used</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function predict() {
+            const btn = document.querySelector('.btn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const data = {
+                warehouse_block: document.getElementById('warehouse_block').value,
+                mode_of_shipment: document.getElementById('mode_of_shipment').value,
+                customer_care_calls: parseInt(document.getElementById('customer_care_calls').value),
+                customer_rating: parseInt(document.getElementById('customer_rating').value),
+                cost_of_product: parseInt(document.getElementById('cost_of_product').value),
+                prior_purchases: parseInt(document.getElementById('prior_purchases').value),
+                product_importance: document.getElementById('product_importance').value,
+                gender: document.getElementById('gender').value,
+                discount_offered: parseInt(document.getElementById('discount_offered').value),
+                weight_in_gms: parseInt(document.getElementById('weight_in_gms').value)
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const res = await response.json();
+
+                document.getElementById('status-badge').textContent = res.status;
+                document.getElementById('status-badge').className = 
+                    'status-badge ' + (res.status === 'DELAYED' ? 'delayed' : 'ontime');
+                document.getElementById('confidence-val').textContent = res.confidence;
+                document.getElementById('explanation').textContent = res.explanation;
+                document.getElementById('stat-prediction').textContent = res.status;
+                document.getElementById('stat-confidence').textContent = res.confidence + '%';
+
+                loading.style.display = 'none';
+                result.style.display = 'block';
+
+            } catch(e) {
+                loading.style.display = 'none';
+                alert('Error connecting to API. Make sure uvicorn is running!');
+                btn.disabled = false;
+            }
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
